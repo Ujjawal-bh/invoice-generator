@@ -45,6 +45,7 @@ npx prisma migrate dev
 npm run dev
 ```
 
+
 ## Notes
 
 - PDF generation uses PDFKit on the Node.js runtime (`nodejs` route segment).
