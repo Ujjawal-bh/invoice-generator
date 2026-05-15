@@ -31,6 +31,8 @@ Recommended: add a Railway **deploy hook** or one-off command step:
 npx prisma migrate deploy
 ```
 
+#invoice-generator.railway.internal
+
 
 Ensure `DATABASE_URL` is available in that step.
 
