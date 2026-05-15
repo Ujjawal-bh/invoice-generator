@@ -1,0 +1,95 @@
+// Invoice Generator MVP — PostgreSQL via Prisma ORM
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+}
+
+model User {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  password          String
+  companyName       String?
+  companyEmail      String?
+  companyPhone      String?
+  companyAddress    String?
+  /// Default tax percent for new invoices (e.g. 10 = 10%)
+  defaultTaxPercent Decimal? @db.Decimal(8, 4)
+  createdAt         DateTime @default(now())
+
+  clients  Client[]
+  invoices Invoice[]
+
+  @@index([email])
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  companyName String?
+  email       String
+  phone       String?
+  address     String?
+  userId      String
+  createdAt   DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+
+  @@index([userId])
+  @@index([userId, name])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String
+  invoiceDate   DateTime      @default(now())
+  clientId      String
+  userId        String
+  status        InvoiceStatus @default(draft)
+  /// Tax percentage for this invoice (e.g. 10 = 10%)
+  taxPercent    Decimal       @default(0) @db.Decimal(8, 4)
+  subtotal      Decimal       @db.Decimal(14, 2)
+  tax           Decimal       @db.Decimal(14, 2)
+  total         Decimal       @db.Decimal(14, 2)
+  notes         String?
+  dueDate       DateTime
+  createdAt     DateTime      @default(now())
+
+  client Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  InvoiceItem[]
+
+  @@unique([userId, invoiceNumber])
+  @@index([userId])
+  @@index([clientId])
+  @@index([status])
+  @@index([invoiceDate])
+  @@index([createdAt])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  name        String
+  description String?
+  quantity    Decimal @db.Decimal(14, 4)
+  rate        Decimal @db.Decimal(14, 2)
+  total       Decimal @db.Decimal(14, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}

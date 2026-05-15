@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /** PDFKit loads `.afm` metrics from disk — bundling breaks downloads at runtime. */
+  serverExternalPackages: ["pdfkit"],
 };
 
 export default nextConfig;
